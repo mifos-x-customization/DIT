@@ -19,6 +19,8 @@ apply plugin: 'com.bmuschko.tomcat'
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
 
+
+
 group = 'org.mifostools'
 
 repositories {
@@ -31,7 +33,7 @@ configurations {
     runtime
 }
 
-compileJava.dependsOn(pmdMain)
+//compileJava.dependsOn(pmdMain)
 
 dependencies {
     def tomcatVersion = '7.0.42'

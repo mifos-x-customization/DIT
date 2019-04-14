@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -59,6 +60,8 @@ public class MifosRestClient implements RestClient {
         public static final String AUTHORIZATION = "Authorization";
         public static final String CONTENT_TYPE = "Content-Type";
         public static final String MIFOS_TENANT_ID = "Fineract-Platform-TenantId";
+        public static final String ACCEPT_ENCODING = "Accept-Encoding";
+        public static final String ACCEPT = "Accept";
     }
     
 
@@ -71,6 +74,8 @@ public class MifosRestClient implements RestClient {
                                 .addHeader(Header.AUTHORIZATION, "Basic " + authToken)
                                 .addHeader(Header.CONTENT_TYPE, "application/json; charset=utf-8")
                                 .addHeader(Header.MIFOS_TENANT_ID, tenantId)
+                                .addHeader(Header.ACCEPT_ENCODING, "gzip,deflate")
+                                .addHeader(Header.ACCEPT, "*/*")
                                 .withContent(payload).execute();
                 String content = readContentAndClose(response.getContent());
             if (response.getStatus() != HttpURLConnection.HTTP_OK) 
@@ -90,6 +95,8 @@ public class MifosRestClient implements RestClient {
     		      SimpleHttpResponse response = new HttpRequestBuilder().withURL(url).withMethod(Method.GET)
     		    		          .addHeader(Header.AUTHORIZATION, "Basic " + authToken)
     		    		          .addHeader(Header.MIFOS_TENANT_ID,tenantId)
+    		    		          .addHeader(Header.ACCEPT_ENCODING, "gzip,deflate")
+                                          .addHeader(Header.ACCEPT, "*/*")
     		    		          .execute();
     		      String content = readContentAndClose(response.getContent());
     		      if(response.getStatus() != HttpURLConnection.HTTP_OK)
@@ -108,7 +115,11 @@ public class MifosRestClient implements RestClient {
         try {
             SimpleHttpResponse response = new HttpRequestBuilder().withURL(url).withMethod(Method.POST)
                         .addHeader(Header.MIFOS_TENANT_ID, tenantId)
-                        .addHeader(Header.CONTENT_TYPE, "application/json; charset=utf-8").execute();
+                        .addHeader(Header.CONTENT_TYPE, "application/json")
+                        .addHeader(Header.ACCEPT_ENCODING, "gzip,deflate")
+                        .addHeader(Header.ACCEPT, "*/*")
+                       .execute();
+                        
             String content = readContentAndClose(response.getContent());
             AuthToken auth = new Gson().fromJson(content, AuthToken.class);
             authToken = auth.getBase64EncodedAuthenticationKey();
@@ -118,7 +129,8 @@ public class MifosRestClient implements RestClient {
     }
 
     private String readContentAndClose(InputStream content) throws IOException {
-        InputStreamReader stream = new InputStreamReader(content,"UTF-8");
+        GZIPInputStream convert = new GZIPInputStream(content);
+        InputStreamReader stream = new InputStreamReader(convert,"UTF-8");
         BufferedReader reader = new BufferedReader(stream);
         String data = reader.readLine();
         stream.close();
